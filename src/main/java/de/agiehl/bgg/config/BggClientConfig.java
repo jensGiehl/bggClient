@@ -45,7 +45,7 @@ public class BggClientConfig {
     public static final int DEFAULT_MAX_RETRIES = 3;
 
     /** Default backoff between retries. */
-    public static final Duration DEFAULT_RETRY_BACKOFF = Duration.ofSeconds(5);
+    public static final Duration DEFAULT_RETRY_BACKOFF = Duration.ofSeconds(20);
 
     /**
      * The API key used to authenticate against the BGG XML API. Required.

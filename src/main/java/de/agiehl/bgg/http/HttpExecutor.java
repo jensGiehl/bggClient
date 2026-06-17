@@ -96,6 +96,7 @@ public class HttpExecutor {
                 .timeout(config.getRequestTimeout())
                 .header("Accept", "application/xml, text/xml")
                 .header("User-Agent", config.getUserAgent())
+                .header("Authorization", "Bearer " + config.getApiKey())
                 .build();
 
         LOGGER.log(Level.FINE, "GET {0}", uri);
@@ -166,8 +167,7 @@ public class HttpExecutor {
 
     private URI buildUri(String path, QueryParameters queryParameters) {
         QueryParameters effective = queryParameters == null ? QueryParameters.create() : queryParameters;
-        effective.add(config.getApiKeyParameter(), config.getApiKey());
-
+        
         String base = config.getBaseUri().toString();
         String fullPath = path.startsWith("/") ? path : "/" + path;
         return URI.create(base + fullPath + effective.toQueryString());
