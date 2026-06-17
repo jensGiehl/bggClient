@@ -1,0 +1,77 @@
+name: BGG API smoke test
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Daily at 04:30 UTC.
+    - cron: '30 4 * * *'
+  workflow_dispatch:
+    inputs:
+      thing_id:
+        description: BGG thing id (default 13 — Catan)
+        required: false
+      family_id:
+        description: BGG family id (default 8374)
+        required: false
+      forum_list_id:
+        description: Parent id for /forumlist (default 13)
+        required: false
+      forum_id:
+        description: BGG forum id (default 26)
+        required: false
+      thread_id:
+        description: BGG thread id (default 2571698)
+        required: false
+      guild_id:
+        description: BGG guild id (default 1000)
+        required: false
+      username:
+        description: BGG username (default Aldie)
+        required: false
+      plays_username:
+        description: Username for /plays (default = username)
+        required: false
+      collection_username:
+        description: Username for /collection (default = username)
+        required: false
+      search_query:
+        description: Search term (default Catan)
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Run smoke test against BGG XML API
+        env:
+          BGG_API_KEY: ${{ secrets.BGG_API_KEY }}
+          BGG_THING_ID: ${{ inputs.thing_id }}
+          BGG_FAMILY_ID: ${{ inputs.family_id }}
+          BGG_FORUM_LIST_ID: ${{ inputs.forum_list_id }}
+          BGG_FORUM_ID: ${{ inputs.forum_id }}
+          BGG_THREAD_ID: ${{ inputs.thread_id }}
+          BGG_GUILD_ID: ${{ inputs.guild_id }}
+          BGG_USERNAME: ${{ inputs.username }}
+          BGG_PLAYS_USERNAME: ${{ inputs.plays_username }}
+          BGG_COLLECTION_USERNAME: ${{ inputs.collection_username }}
+          BGG_SEARCH_QUERY: ${{ inputs.search_query }}
+        run: |
+          if [ -z "${BGG_API_KEY}" ]; then
+            echo "::warning::BGG_API_KEY secret is not set — smoke test will be skipped by JUnit."
+          fi
+          mvn -B -ntp test -Dtest=BggApiSmokeTest
