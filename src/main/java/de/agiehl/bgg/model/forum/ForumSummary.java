@@ -1,6 +1,8 @@
 package de.agiehl.bgg.model.forum;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import de.agiehl.bgg.model.common.NumericBooleanDeserializer;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -27,6 +29,7 @@ public class ForumSummary {
 
     /** {@code true} when the forum does not allow new threads. */
     @JacksonXmlProperty(isAttribute = true)
+    @JsonDeserialize(using = NumericBooleanDeserializer.class)
     Boolean noposting;
 
     /** Forum description. */

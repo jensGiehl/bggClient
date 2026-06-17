@@ -1,6 +1,8 @@
 package de.agiehl.bgg.model.plays;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import de.agiehl.bgg.model.common.NumericBooleanDeserializer;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -39,6 +41,7 @@ public class PlayPlayer {
 
     /** {@code true} when this was the player's first play of the game. */
     @JacksonXmlProperty(isAttribute = true, localName = "new")
+    @JsonDeserialize(using = NumericBooleanDeserializer.class)
     Boolean newPlayer;
 
     /** Optional rating the player gave the game after this play. */
@@ -47,5 +50,6 @@ public class PlayPlayer {
 
     /** {@code true} when this player won the game. */
     @JacksonXmlProperty(isAttribute = true)
+    @JsonDeserialize(using = NumericBooleanDeserializer.class)
     Boolean win;
 }

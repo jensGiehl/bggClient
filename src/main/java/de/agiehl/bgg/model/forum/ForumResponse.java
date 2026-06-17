@@ -1,8 +1,10 @@
 package de.agiehl.bgg.model.forum;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import de.agiehl.bgg.model.common.NumericBooleanDeserializer;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -49,6 +51,7 @@ public class ForumResponse {
 
     /** {@code true} when the forum does not allow new threads. */
     @JacksonXmlProperty(isAttribute = true)
+    @JsonDeserialize(using = NumericBooleanDeserializer.class)
     Boolean noposting;
 
     /** Threads on the requested page. */

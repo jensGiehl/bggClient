@@ -1,5 +1,6 @@
 package de.agiehl.bgg.model.common;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Builder;
 import lombok.Value;
@@ -34,5 +35,6 @@ public class Link {
      * an expansion linked from its base game.
      */
     @JacksonXmlProperty(isAttribute = true)
+    @JsonDeserialize(using = NumericBooleanDeserializer.class)
     Boolean inbound;
 }
