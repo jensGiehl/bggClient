@@ -12,20 +12,14 @@ import de.agiehl.bgg.model.plays.PlaysResponse;
 import de.agiehl.bgg.model.search.SearchResponse;
 import de.agiehl.bgg.model.thing.ThingResponse;
 import de.agiehl.bgg.model.user.UserResponse;
-import de.agiehl.bgg.request.CollectionRequest;
-import de.agiehl.bgg.request.ForumListRequest;
-import de.agiehl.bgg.request.GuildRequest;
-import de.agiehl.bgg.request.ThingRequest;
-import de.agiehl.bgg.request.ThreadRequest;
+import de.agiehl.bgg.request.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * End-to-end smoke test against the live BoardGameGeek XML API.
@@ -49,7 +43,26 @@ class BggApiSmokeTest {
     void thingEndpointReturnsData() {
         int id = envInt("BGG_THING_ID", 13); // Catan
         ThingResponse response = client.things().fetch(
-                ThingRequest.builder().id(id).stats(true).build());
+                ThingRequest.builder()
+                        .id(id)
+                        .versions(true)
+                        .videos(true)
+                        .stats(true)
+                        .marketplace(true)
+                        .comments(true)
+                        .build());
+        assertNotNull(response, "ThingResponse must not be null");
+        assertNotEmpty(response.getItems(), "ThingResponse.items");
+    }
+
+    @Test
+    void thingEndpointWithRatingCommentsReturnsData() {
+        int id = envInt("BGG_THING_ID", 13); // Catan
+        ThingResponse response = client.things().fetch(
+                ThingRequest.builder()
+                        .id(id)
+                        .ratingComments(true)
+                        .build());
         assertNotNull(response, "ThingResponse must not be null");
         assertNotEmpty(response.getItems(), "ThingResponse.items");
     }
@@ -102,7 +115,7 @@ class BggApiSmokeTest {
     void guildEndpointReturnsData() {
         int id = envInt("BGG_GUILD_ID", 1000); // Example guild from public BGG clients
         GuildResponse response = client.guilds().fetch(
-                GuildRequest.builder().id(id).build());
+                GuildRequest.builder().id(id).members(true).build());
         assertNotNull(response, "GuildResponse must not be null");
         assertNotNull(response.getName(), "GuildResponse.name must not be null");
     }
@@ -117,9 +130,14 @@ class BggApiSmokeTest {
 
     @Test
     void collectionEndpointReturnsData() {
-        String name = env("BGG_COLLECTION_USERNAME", env("BGG_USERNAME", "Aldie"));
-        CollectionResponse response = client.collections().fetch(
-                CollectionRequest.builder().username(name).owned(true).build());
+        String name = env("BGG_PLAYS_USERNAME", env("BGG_USERNAME", "Aldie"));
+        CollectionResponse response = client.collections().fetch(CollectionRequest.builder()
+                .username(name)
+                .version(true)
+                .brief(true)
+                .stats(true)
+                .owned(true)
+                .build());
         assertNotNull(response, "CollectionResponse must not be null");
         assertNotEmpty(response.getItems(), "CollectionResponse.items");
     }
@@ -153,4 +171,5 @@ class BggApiSmokeTest {
         assertNotNull(list, field + " must not be null");
         assertFalse(list.isEmpty(), field + " must not be empty");
     }
+
 }
