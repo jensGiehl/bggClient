@@ -1,8 +1,6 @@
 name: BGG API smoke test
 
 on:
-  push:
-    branches: [main, master]
   schedule:
     # Daily at 04:30 UTC.
     - cron: '30 4 * * *'

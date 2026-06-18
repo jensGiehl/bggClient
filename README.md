@@ -60,7 +60,7 @@ Then declare the dependency:
 <dependency>
     <groupId>de.agiehl</groupId>
     <artifactId>bgg-client</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
