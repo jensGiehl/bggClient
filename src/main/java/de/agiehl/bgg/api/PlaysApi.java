@@ -90,17 +90,18 @@ public class PlaysApi {
                 response.getPlays() == null ? Stream.empty() : response.getPlays().stream());
     }
 
-    /**
-     * Eagerly fetches every page and returns them in order. Blocks until
-     * pagination completes — prefer {@link #pages(PlaysRequest)} for very
-     * large datasets where short-circuiting is desirable.
-     *
-     * @param request the request (the {@code page} field is overridden per fetch)
-     * @return an unmodifiable list of every page in order
-     */
-    public List<PlaysResponse> allPages(PlaysRequest request) {
-        return pages(request).toList();
-    }
+     /**
+      * Eagerly fetches every page and returns all {@link Play} entries from all
+      * pages in order. Blocks until pagination completes — prefer
+      * {@link #items(PlaysRequest)} for very large datasets where
+      * short-circuiting is desirable.
+      *
+      * @param request the request (the {@code page} field is overridden per fetch)
+      * @return an unmodifiable list of every play from all pages in order
+      */
+     public List<Play> allPages(PlaysRequest request) {
+         return items(request).toList();
+     }
 
     /**
      * Eagerly fetches every page and returns all {@link Play} entries in
