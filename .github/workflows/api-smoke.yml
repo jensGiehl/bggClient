@@ -55,6 +55,16 @@ jobs:
           java-version: '21'
           cache: maven
 
+      - name: Thing API smoke test
+        if: always()
+        continue-on-error: true
+        env:
+          BGG_API_KEY: ${{ secrets.BGG_API_KEY }}
+          BGG_THING_ID: ${{ inputs.thing_id }}
+        run: |
+          curl -i -L --header "Authorization: Bearer ${{ env.BGG_API_KEY }}" \
+            "https://boardgamegeek.com/xmlapi2/thing?id=${BGG_THING_ID:-13}"
+
       - name: Run smoke test against BGG XML API
         env:
           BGG_API_KEY: ${{ secrets.BGG_API_KEY }}
