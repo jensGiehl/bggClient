@@ -56,6 +56,7 @@ public class HttpExecutor {
      */
     public HttpExecutor(BggClientConfig config) {
         this(config, HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
                 .connectTimeout(config.getConnectTimeout())
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build(),

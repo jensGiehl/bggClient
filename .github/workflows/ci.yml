@@ -19,4 +19,6 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
+      env:
+        BGG_API_KEY: ${{ secrets.BGG_API_KEY }}
       run: mvn -B clean install --file pom.xml
