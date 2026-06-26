@@ -83,3 +83,8 @@ jobs:
             echo "::warning::BGG_API_KEY secret is not set — smoke test will be skipped by JUnit."
           fi
           mvn -B -ntp test -Dtest=BggApiSmokeTest
+      - name: Publish Test Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: target/surefire-reports
