@@ -56,8 +56,8 @@ public class HttpExecutor {
      */
     public HttpExecutor(BggClientConfig config) {
         this(config, HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_1_1)
                 .connectTimeout(config.getConnectTimeout())
+                .version(HttpClient.Version.HTTP_1_1)
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build(),
                 XmlMapperFactory.create());
@@ -94,6 +94,7 @@ public class HttpExecutor {
         URI uri = buildUri(path, queryParameters);
         HttpRequest request = HttpRequest.newBuilder(uri)
                 .GET()
+                .version(HttpClient.Version.HTTP_1_1)
                 .timeout(config.getRequestTimeout())
                 .header("Accept", "application/xml, text/xml")
                 .header("User-Agent", config.getUserAgent())
