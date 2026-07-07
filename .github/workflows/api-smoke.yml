@@ -82,7 +82,7 @@ jobs:
           if [ -z "${BGG_API_KEY}" ]; then
             echo "::warning::BGG_API_KEY secret is not set — smoke test will be skipped by JUnit."
           fi
-          mvn -B -ntp test -Dtest=BggApiSmokeTest
+          mvn -B -ntp test -Dtest=BggApiSmokeTest -Djava.util.logging.config.file=src/test/resources/logging.properties
       - name: Publish Test Report
         uses: actions/upload-artifact@v4
         with:
