@@ -16,7 +16,6 @@ import de.agiehl.bgg.request.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
@@ -31,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * helpers below.
  */
 @EnabledIfEnvironmentVariable(named = "BGG_API_KEY", matches = ".+")
-@ExtendWith(RetryExtension.class)
 class BggApiSmokeTest {
 
     private static BggClient client;
