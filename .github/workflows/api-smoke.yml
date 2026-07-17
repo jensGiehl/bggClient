@@ -78,13 +78,20 @@ jobs:
           BGG_PLAYS_USERNAME: ${{ inputs.plays_username }}
           BGG_COLLECTION_USERNAME: ${{ inputs.collection_username }}
           BGG_SEARCH_QUERY: ${{ inputs.search_query }}
+          BGG_SMOKE_REQUEST_TIMEOUT_SECONDS: '60'
+          BGG_SMOKE_MAX_ATTEMPTS: '3'
+          BGG_SMOKE_RETRY_BACKOFF_SECONDS: '5'
         run: |
           if [ -z "${BGG_API_KEY}" ]; then
             echo "::warning::BGG_API_KEY secret is not set — smoke test will be skipped by JUnit."
           fi
-          mvn -B -ntp test -Dtest=BggApiSmokeTest -Djava.util.logging.config.file=src/test/resources/logging.properties
+          mvn -B -ntp -e test -Dtest=BggApiSmokeTest \
+            -Djava.util.logging.config.file=src/test/resources/logging.properties \
+            -Djdk.httpclient.HttpClient.log=errors,requests
       - name: Publish Test Report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-report
           path: target/surefire-reports
+          if-no-files-found: warn
