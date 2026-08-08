@@ -1,7 +1,11 @@
 package de.agiehl.bgg.http;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+
+import java.io.IOException;
 
 /**
  * Internal factory for the Jackson {@link XmlMapper} used to deserialize BGG
@@ -27,6 +31,24 @@ public final class XmlMapperFactory {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
         mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        mapper.addHandler(new InvalidNumberAsNullHandler());
         return mapper;
+    }
+
+    /**
+     * BGG occasionally uses labels such as {@code "Not Ranked"} in attributes
+     * that otherwise contain numbers. Treat those values as missing instead of
+     * failing the complete response.
+     */
+    private static final class InvalidNumberAsNullHandler extends DeserializationProblemHandler {
+
+        @Override
+        public Object handleWeirdStringValue(DeserializationContext context, Class<?> targetType,
+                                             String value, String failureMessage) throws IOException {
+            if (Number.class.isAssignableFrom(targetType)) {
+                return null;
+            }
+            return NOT_HANDLED;
+        }
     }
 }
