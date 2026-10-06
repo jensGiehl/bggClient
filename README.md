@@ -1,6 +1,6 @@
 # BGG Client
 
-A lightweight Java 27 client for the [BoardGameGeek XML API v2](https://boardgamegeek.com/wiki/page/BGG_XML_API2).
+A lightweight Java 21 client for the [BoardGameGeek XML API v2](https://boardgamegeek.com/wiki/page/BGG_XML_API2).
 
 It wraps every public read endpoint (`/thing`, `/family`, `/forumlist`, `/forum`, `/thread`, `/user`, `/guild`, `/plays`, `/collection`, `/hot`, `/search`) behind a small, immutable, thread-safe Java API. Responses are parsed into typed model classes; paginated endpoints offer single-page fetches, lazy `Stream`s and eager load-all variants. Retries for the typical BGG transient responses (`202 Accepted` on `/collection`, `429 Too Many Requests`, `503 Service Unavailable`) are built in.
 
@@ -48,7 +48,7 @@ A few endpoints (`/user`, `/plays`, `/collection`, `/guild`) additionally operat
 
 ## Installation
 
-The artifact requires JDK 27 or newer and Maven 3.9.0 or newer. Source files, reports and XML responses use UTF-8. From the project root:
+The library requires Java 21 or newer at runtime. Building requires JDK 21 or newer and Maven 3.9.0 or newer. Maven compiles with `--release 21`, targeting Java 21 bytecode and APIs even when building with a newer JDK. Source files, reports and XML responses use UTF-8. From the project root:
 
 ```bash
 mvn install
@@ -77,7 +77,7 @@ Dependencies were checked against Maven Central on 2026-10-06. Stable releases a
 | Stax2 API (transitive) | 4.3.1 |
 | JSpecify (transitive, tests only) | 1.0.1 |
 
-Maven lifecycle and reporting plugins are pinned in `pom.xml`. GitHub Actions use checkout 7.0.1, setup-java 6.0.1 and upload-artifact 7.0.1; all workflows run on Java 27.
+Maven lifecycle and reporting plugins are pinned in `pom.xml`. GitHub Actions use checkout 7.0.1, setup-java 6.0.1 and upload-artifact 7.0.1; all workflows run on Java 21.
 
 The migration to [Jackson 3](https://github.com/FasterXML/jackson/blob/main/jackson3/MIGRATING_TO_JACKSON_3.md) changes mapper, XML annotation and deserializer packages to `tools.jackson`. Core annotations retain `com.fasterxml.jackson.annotation`. Custom mappers passed to `HttpExecutor` must use the Jackson 3 `XmlMapper`. `lombok.config` configures `@Jacksonized` to generate Jackson 3 builder annotations. Parse failures remain wrapped in `BggParseException`.
 
