@@ -1,11 +1,9 @@
 package de.agiehl.bgg.http;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-
-import java.io.IOException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.deser.DeserializationProblemHandler;
+import tools.jackson.dataformat.xml.XmlMapper;
 
 /**
  * Internal factory for the Jackson {@link XmlMapper} used to deserialize BGG
@@ -27,12 +25,12 @@ public final class XmlMapperFactory {
      * @return a fully configured {@link XmlMapper}
      */
     public static XmlMapper create() {
-        XmlMapper mapper = new XmlMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
-        mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
-        mapper.addHandler(new InvalidNumberAsNullHandler());
-        return mapper;
+        return XmlMapper.builder()
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)
+                .enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+                .addHandler(new InvalidNumberAsNullHandler())
+                .build();
     }
 
     /**
@@ -44,7 +42,7 @@ public final class XmlMapperFactory {
 
         @Override
         public Object handleWeirdStringValue(DeserializationContext context, Class<?> targetType,
-                                             String value, String failureMessage) throws IOException {
+                                             String value, String failureMessage) {
             if (Number.class.isAssignableFrom(targetType)) {
                 return null;
             }

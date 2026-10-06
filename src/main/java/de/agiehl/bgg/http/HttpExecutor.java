@@ -1,6 +1,7 @@
 package de.agiehl.bgg.http;
 
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.dataformat.xml.XmlMapper;
 import de.agiehl.bgg.config.BggClientConfig;
 import de.agiehl.bgg.exception.BggClientException;
 import de.agiehl.bgg.exception.BggHttpException;
@@ -161,7 +162,7 @@ public class HttpExecutor {
     private <T> T parse(byte[] body, Class<T> type) {
         try {
             return xmlMapper.readValue(body, type);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             LOGGER.log(Level.WARNING, e, () -> "Failed to parse response as " + type.getSimpleName());
             throw new BggParseException("Failed to parse response as " + type.getSimpleName(), e);
         }

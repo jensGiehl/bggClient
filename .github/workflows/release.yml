@@ -15,13 +15,13 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - name: Set up JDK 27
+        uses: actions/setup-java@v6.0.1
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: "27"
           cache: maven
 
       - name: Build release artifacts

@@ -1,7 +1,7 @@
 package de.agiehl.bgg.model.plays;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import de.agiehl.bgg.model.common.NumericBooleanDeserializer;
 import lombok.Builder;
 import lombok.Value;

@@ -1,6 +1,6 @@
 package de.agiehl.bgg.model.hot;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import de.agiehl.bgg.model.common.IntValue;
 import de.agiehl.bgg.model.common.StringValue;
 import lombok.Builder;

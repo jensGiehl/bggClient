@@ -1,7 +1,7 @@
 package de.agiehl.bgg.model.user;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import de.agiehl.bgg.model.common.IntValue;
 import de.agiehl.bgg.model.common.StringValue;
 import lombok.Builder;

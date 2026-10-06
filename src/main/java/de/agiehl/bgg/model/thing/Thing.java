@@ -1,7 +1,7 @@
 package de.agiehl.bgg.model.thing;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import de.agiehl.bgg.model.common.IntValue;
 import de.agiehl.bgg.model.common.Link;
 import de.agiehl.bgg.model.common.Name;

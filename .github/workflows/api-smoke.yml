@@ -46,13 +46,13 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - name: Set up JDK 27
+        uses: actions/setup-java@v6.0.1
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '27'
           cache: maven
 
       - name: Thing API smoke test
@@ -90,7 +90,7 @@ jobs:
             -Djdk.httpclient.HttpClient.log=errors,requests
       - name: Publish Test Report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: test-report
           path: target/surefire-reports
