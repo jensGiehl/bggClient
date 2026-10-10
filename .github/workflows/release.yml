@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: github-release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -16,6 +20,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.ref_name }}
 
       - name: Set up JDK 21
         uses: actions/setup-java@v6.0.1
@@ -24,22 +30,49 @@ jobs:
           java-version: "21"
           cache: maven
 
+      - name: Increase patch version
+        id: project
+        shell: bash
+        run: |
+          version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+
+          if [[ ! "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "::error::Expected a project version in MAJOR.MINOR.PATCH format, got '$version'."
+            exit 1
+          fi
+
+          next_version="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((10#${BASH_REMATCH[3]} + 1))"
+          mvn --batch-mode --no-transfer-progress org.codehaus.mojo:versions-maven-plugin:2.22.0:set \
+            -DnewVersion="$next_version" \
+            -DgenerateBackupPoms=false
+
+          echo "version=$next_version" >> "$GITHUB_OUTPUT"
+
       - name: Build release artifacts
         run: mvn --batch-mode clean package -DskipTests
 
-      - name: Read project version
-        id: project
+      - name: Commit and push release version
+        id: commit
+        env:
+          RELEASE_VERSION: ${{ steps.project.outputs.version }}
         shell: bash
-        run: echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> "$GITHUB_OUTPUT"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pom.xml
+          git commit -m "chore: release version $RELEASE_VERSION"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: v${{ steps.project.outputs.version }}-${{ github.run_number }}
+          RELEASE_COMMIT: ${{ steps.commit.outputs.sha }}
         shell: bash
         run: |
           gh release create "$RELEASE_TAG" \
             target/*.jar \
-            --target "$GITHUB_SHA" \
+            --target "$RELEASE_COMMIT" \
             --title "Release $RELEASE_TAG" \
             --generate-notes

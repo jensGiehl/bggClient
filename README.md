@@ -89,6 +89,16 @@ mvn clean verify
 
 The live API smoke tests additionally require `BGG_API_KEY`; without it, JUnit skips them.
 
+## Automatische GitHub-Releases
+
+Der Workflow `.github/workflows/release.yml` startet bei einem Push auf `main` oder `master` und verwendet den aktuellen Stand des jeweiligen Branches. Vor dem Build erhöht das Maven Versions Plugin die Patch-Version in `pom.xml`, beispielsweise von `1.0.4` auf `1.0.5`. Die Version muss das Format `MAJOR.MINOR.PATCH` haben.
+
+Nach einem erfolgreichen Build committet `github-actions[bot]` die geänderte `pom.xml` und pusht sie zurück auf denselben Branch. Anschließend erstellt der Workflow den GitHub-Release mit dem Tag `v<VERSION>-<LAUFNUMMER>`, beispielsweise `v1.0.5-42`. Der Tag zeigt auf den neuen Versions-Commit; die angehängten JARs einschließlich Sources und Javadoc verwenden ebenfalls die erhöhte Version.
+
+Release-Läufe desselben Branches laufen nacheinander. Wenn während des Builds weitere Commits auf den Branch gepusht werden, schlägt der Versions-Push fehl und dieser Lauf erstellt keinen Release. Der wartende Lauf verwendet anschließend den aktuellen Branch-Stand.
+
+Der Workflow benötigt `contents: write`; Branch-Schutzregeln müssen den Push durch GitHub Actions erlauben. Der integrierte `GITHUB_TOKEN` verhindert, dass der automatische Versions-Push erneut Push-Workflows auslöst ([GitHub-Dokumentation](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow#triggering-a-workflow-from-a-workflow)). Nach einem Release sollte lokal zunächst `git pull` ausgeführt werden, um den Versions-Commit zu übernehmen. Ein vollständig erneut gestarteter Workflow-Lauf erhöht die Patch-Version noch einmal.
+
 ## Creating a client
 
 Default configuration:
