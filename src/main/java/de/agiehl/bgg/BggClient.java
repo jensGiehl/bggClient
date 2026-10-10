@@ -38,8 +38,9 @@ import java.util.logging.Logger;
  *     <li>{@link #search()} - {@code /search}</li>
  * </ul>
  *
- * <p>The client is fully immutable and thread-safe. A single instance can be
- * shared across an entire application.
+ * <p>The configuration is immutable and the client is thread-safe. Each client
+ * maintains its own cookie session. Complete an optional login before sharing
+ * the client across an application.
  *
  * <p>Typical usage:
  *
@@ -67,6 +68,8 @@ public class BggClient {
 
     @Getter
     private final BggClientConfig config;
+
+    private final HttpExecutor executor;
 
     private final ThingApi things;
     private final FamilyApi families;
@@ -99,6 +102,7 @@ public class BggClient {
      */
     public BggClient(BggClientConfig config, HttpExecutor executor) {
         this.config = config;
+        this.executor = executor;
         if (LOGGER.isLoggable(Level.CONFIG)) {
             LOGGER.log(Level.CONFIG,
                     "BggClient initialised for {0} (maxRetries={1}, retryBackoff={2})",
@@ -133,6 +137,22 @@ public class BggClient {
      */
     public static Builder builder() {
         return new Builder();
+    }
+
+    /**
+     * Optionally authenticates with a BoardGameGeek website account to access
+     * private fields. The API token remains required. Session cookies are kept
+     * in memory and sent automatically with all matching endpoint requests.
+     *
+     * <p>Call before sharing the client across threads. Login replaces any
+     * existing session; a failed login request clears the session. Passwords are not retained.
+     *
+     * @param username the website username, must not be blank
+     * @param password the website password, must not be empty
+     * @throws de.agiehl.bgg.exception.BggAuthenticationException if authentication fails
+     */
+    public void login(String username, String password) {
+        executor.login(username, password);
     }
 
     /** @return the {@code /thing} endpoint */

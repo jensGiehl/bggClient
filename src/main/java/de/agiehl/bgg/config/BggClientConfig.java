@@ -50,8 +50,8 @@ public class BggClientConfig {
     /**
      * The API key used to authenticate against the BGG XML API. Required.
      *
-     * <p>The key is appended to every outgoing request as a query parameter.
-     * The parameter name can be customised via {@link #apiKeyParameter}.
+     * <p>The key is sent as an Authorization Bearer header on every API request.
+     * An optional website login adds session cookies without replacing the key.
      */
     @NonNull
     private final String apiKey;

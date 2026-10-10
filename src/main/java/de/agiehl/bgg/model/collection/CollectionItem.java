@@ -55,4 +55,7 @@ public class CollectionItem {
 
     /** User's comment on the wishlist entry. */
     String wishlistcomment;
+
+    /** Private collection details available for the authenticated owner's collection. */
+    CollectionPrivateInfo privateinfo;
 }

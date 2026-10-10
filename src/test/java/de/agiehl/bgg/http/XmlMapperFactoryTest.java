@@ -1,5 +1,6 @@
 package de.agiehl.bgg.http;
 
+import de.agiehl.bgg.model.collection.CollectionPrivateInfo;
 import de.agiehl.bgg.model.collection.CollectionResponse;
 import de.agiehl.bgg.model.collection.CollectionStatus;
 import de.agiehl.bgg.model.thing.ThingRank;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -49,6 +51,70 @@ class XmlMapperFactoryTest {
         assertTrue(item.getStatus().getOwn());
         assertEquals(false, item.getStatus().getPrevowned());
         assertTrue(item.getStatus().getWishlist());
+    }
+
+    @Test
+    void mapsPrivateCollectionAttributesAndCommentWithoutRoundingMoney() {
+        String xml = """
+                <items totalitems="1">
+                  <item objecttype="thing" objectid="13" subtype="boardgame" collid="1">
+                    <privateinfo pp_currency="EUR" pricepaid="12345678901234567890.1234567890"
+                                 cv_currency="USD" currvalue="59.95" quantity="2"
+                                 acquisitiondate="2026-10-10" acquiredfrom="Händler &amp; Freunde"
+                                 inventorylocation="Büro, Regal 1">
+                      <privatecomment>Geschenk für die Familie</privatecomment>
+                    </privateinfo>
+                  </item>
+                </items>
+                """;
+
+        CollectionResponse response = XmlMapperFactory.create()
+                .readValue(xml.getBytes(StandardCharsets.UTF_8), CollectionResponse.class);
+
+        CollectionPrivateInfo privateInfo = response.getItems().getFirst().getPrivateinfo();
+        assertEquals("EUR", privateInfo.getPpCurrency());
+        assertEquals(new BigDecimal("12345678901234567890.1234567890"), privateInfo.getPricepaid());
+        assertEquals("USD", privateInfo.getCvCurrency());
+        assertEquals(new BigDecimal("59.95"), privateInfo.getCurrvalue());
+        assertEquals(2, privateInfo.getQuantity());
+        assertEquals("2026-10-10", privateInfo.getAcquisitiondate());
+        assertEquals("Händler & Freunde", privateInfo.getAcquiredfrom());
+        assertEquals("Büro, Regal 1", privateInfo.getInventorylocation());
+        assertEquals("Geschenk für die Familie", privateInfo.getPrivatecomment());
+    }
+
+    @Test
+    void mapsCollectionWithoutPrivateInformation() {
+        String xml = """
+                <items totalitems="1">
+                  <item objecttype="thing" objectid="13" subtype="boardgame" collid="1"/>
+                </items>
+                """;
+
+        CollectionResponse response = XmlMapperFactory.create().readValue(xml, CollectionResponse.class);
+
+        assertNull(response.getItems().getFirst().getPrivateinfo());
+    }
+
+    @Test
+    void mapsEmptyPrivateNumericAttributesAndMissingOptionalFields() {
+        String xml = """
+                <privateinfo pricepaid="" currvalue="" quantity="" acquisitiondate="">
+                  <privatecomment/>
+                </privateinfo>
+                """;
+
+        CollectionPrivateInfo privateInfo = XmlMapperFactory.create().readValue(xml, CollectionPrivateInfo.class);
+
+        assertNull(privateInfo.getPricepaid());
+        assertNull(privateInfo.getCurrvalue());
+        assertNull(privateInfo.getQuantity());
+        assertNull(privateInfo.getPpCurrency());
+        assertNull(privateInfo.getCvCurrency());
+        assertNull(privateInfo.getAcquiredfrom());
+        assertNull(privateInfo.getInventorylocation());
+        assertEquals("", privateInfo.getAcquisitiondate());
+        assertEquals("", privateInfo.getPrivatecomment());
     }
 
     @Test

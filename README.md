@@ -2,7 +2,7 @@
 
 A lightweight Java 21 client for the [BoardGameGeek XML API v2](https://boardgamegeek.com/wiki/page/BGG_XML_API2).
 
-It wraps every public read endpoint (`/thing`, `/family`, `/forumlist`, `/forum`, `/thread`, `/user`, `/guild`, `/plays`, `/collection`, `/hot`, `/search`) behind a small, immutable, thread-safe Java API. Responses are parsed into typed model classes; paginated endpoints offer single-page fetches, lazy `Stream`s and eager load-all variants. Retries for the typical BGG transient responses (`202 Accepted` on `/collection`, `429 Too Many Requests`, `503 Service Unavailable`) are built in.
+It wraps every public read endpoint (`/thing`, `/family`, `/forumlist`, `/forum`, `/thread`, `/user`, `/guild`, `/plays`, `/collection`, `/hot`, `/search`) behind a small, thread-safe Java API with immutable configuration. Responses are parsed into typed model classes; paginated endpoints offer single-page fetches, lazy `Stream`s and eager load-all variants. Retries for the typical BGG transient responses (`202 Accepted` on `/collection`, `429 Too Many Requests`, `503 Service Unavailable`) are built in. An optional website login enables access to private collection fields.
 
 ## Minimal dependencies
 
@@ -42,7 +42,7 @@ Then hand the token to the client:
 BggClient client = BggClient.of("your-bgg-api-token");
 ```
 
-The client sends the token as an `apikey` query parameter on every request. The parameter name is configurable via `BggClientConfig.apiKeyParameter(...)` if your deployment needs a different name.
+The client sends the token as an `Authorization: Bearer ...` header on every API request.
 
 A few endpoints (`/user`, `/plays`, `/collection`, `/guild`) additionally operate on data tied to a specific BGG account. For those you pass the **username** (not credentials) as part of the request — separately from the API token used for authentication.
 
@@ -122,7 +122,37 @@ BggClient client = BggClient.builder()
     .build();
 ```
 
-A single `BggClient` is immutable and thread-safe — share one instance across the application.
+A single `BggClient` is thread-safe and has immutable configuration. Complete an optional login before sharing the instance across the application. Use a separate client for each account.
+
+## Optionaler Login für private Felder
+
+Der API-Token bleibt erforderlich. Zusätzlich kannst du dich mit Benutzername und Passwort bei BoardGameGeek anmelden:
+
+```java
+BggClient client = BggClient.of(System.getenv("BGG_API_KEY"));
+client.login(System.getenv("BGG_LOGIN_USERNAME"), System.getenv("BGG_LOGIN_PASSWORD"));
+
+CollectionResponse collection = client.collections().fetch(
+    CollectionRequest.builder()
+        .username(System.getenv("BGG_LOGIN_USERNAME"))
+        .showPrivate(true)
+        .build());
+
+collection.getItems().stream()
+    .map(CollectionItem::getPrivateinfo)
+    .filter(Objects::nonNull)
+    .forEach(info -> System.out.println(info.getInventorylocation()));
+```
+
+Ohne den Aufruf von `login(...)` funktioniert der Client wie bisher mit dem API-Token. Laut [BGG-Dokumentation](https://boardgamegeek.com/wiki/page/BGG_XML_API2) liefert `showprivate=1` private Daten nur für die Sammlung des angemeldeten Benutzers. Verwende die vollständige Collection-Abfrage ohne `brief(true)`.
+
+Der Login sendet die Zugangsdaten als UTF-8-JSON an `/login/api/v1` auf dem Host der konfigurierten `baseUri`. Beim Standard-Host ist das `https://boardgamegeek.com/login/api/v1`. Das Passwort wird nicht im Client oder seiner Konfiguration gespeichert. Ein `CookieManager` merkt sich die vom Server gesetzten Cookies pro Client im Arbeitsspeicher und sendet alle passenden Cookies automatisch bei sämtlichen API-Anfragen, Folgeseiten und Wiederholungsversuchen mit. Domain, Pfad, `Secure` und Ablaufzeit werden berücksichtigt; Cookie-Änderungen aus API-Antworten werden ebenfalls übernommen. Die Cookies werden nicht auf Festplatte gespeichert. Nach einem Neustart oder dem Ablauf der Sitzung ist ein erneuter Login nötig.
+
+Ein erfolgreicher Login benötigt einen HTTP-Erfolgsstatus und gültige `bggusername`- und `bggpassword`-Cookies für die API. Bei einer abgelehnten Anmeldung oder fehlenden Authentifizierungs-Cookies wird `BggAuthenticationException` geworfen. Login-Antworttexte werden nicht in diese Exception übernommen. Jeder Login ersetzt die bisherige Sitzung; schlägt der Login-Request fehl, werden die Cookies gelöscht. Login-Weiterleitungen werden nicht verfolgt. Führe einen erneuten Login aus, wenn keine API-Anfragen mehr laufen.
+
+`CollectionItem.getPrivateinfo()` liefert ein `CollectionPrivateInfo` mit Kaufpreis und Währung (`pricepaid`, `ppCurrency`), aktuellem Wert und Währung (`currvalue`, `cvCurrency`), Anzahl (`quantity`), Erwerbsdatum (`acquisitiondate`), Bezugsquelle (`acquiredfrom`), Lagerort (`inventorylocation`) und privatem Kommentar (`privatecomment`). Geldbeträge verwenden `BigDecimal`. Nicht gelieferte private Daten bleiben `null`; leere Zahlenattribute werden ebenfalls als `null` gelesen.
+
+Wenn du über den erweiterten `HttpExecutor`-Konstruktor einen eigenen `HttpClient` verwendest, braucht dieser für den Login einen eigenen `CookieManager` und `HttpClient.Redirect.NEVER`. Teile diesen CookieManager nicht zwischen verschiedenen Konten.
 
 ## Endpoint examples
 
@@ -287,5 +317,6 @@ All client failures are wrapped in `BggClientException`:
 
 - `BggHttpException` — non-retryable HTTP failure, including the status code.
 - `BggParseException` — the XML response could not be deserialised.
+- `BggAuthenticationException` — the optional website login was rejected or returned no valid authentication cookies.
 
 Retryable responses (`202`, `429`, `503`) are absorbed transparently up to `maxRetries`; only when the retry budget is exhausted does a `BggHttpException` surface.

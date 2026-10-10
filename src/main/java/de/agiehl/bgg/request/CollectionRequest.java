@@ -105,7 +105,11 @@ public class CollectionRequest {
     /** Maximum recorded plays. */
     Integer maxPlays;
 
-    /** Include private collection metadata ({@code showprivate=1}). */
+    /**
+     * Include private collection metadata ({@code showprivate=1}). Requires a
+     * website login through {@link de.agiehl.bgg.BggClient#login(String, String)}
+     * with the account named by {@link #username}.
+     */
     boolean showPrivate;
 
     /** Filter to a single collection entry by collection id. */
